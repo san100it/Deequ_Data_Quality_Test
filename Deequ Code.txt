@@ -41,7 +41,7 @@ Input_Query=data.loc[0].at["input_Coulmn"]
 
 check-=Check(spark, CheckLevel.Warning, "Input Data Check")
 #pinput_RInt (Input_Query)
-input_df = spark.aql(Input_Query)
+input_df = spark.sql(Input_Query)
 
 input_df.cache()
 
@@ -58,7 +58,7 @@ var_input_RI_input_check_flag = data.loc[4].at["input_Rule ON/OFF"]
 if var input_RI_input_check_flag != "KEEP_IT_OFF":
 	src_tbl_Input_Query="select from "+input_RI_src_tbl
 	ref_tbl_Input_Query= "select from "+input_RI_ref_tbl
-	input_df_src = spark.sql (arc_tbl_Input_Query)
+	input_df_src = spark.sql (src_tbl_Input_Query)
 	input_df_ref= spark.sql (ref_tbl_Input_Query)
 	input_RI_src_tbl_coll="input_df_src."+input_input_RI_src_tbl_col
 	input_RI_ref_tbl_coll="input_df ref."+input_RI ref tbl col
@@ -98,7 +98,7 @@ completness_Input_Query=data.loc[1].at["input_Data_Source"]
 
 input_var_Completeness_tbl=data.loc[0].at["input_Table_Name")
 input_var_Completeness=data.loc[1].at["input_Coulmn"]
-input_var_Completeness_flag=data.loc[1].at["input_Rule ON/OFF"1
+input_var_Completeness_flag=data.loc[1].at["input_Rule ON/OFF"
 
 
 if input_var_Completeness_flag != 'KEEP_IT_OFF'
