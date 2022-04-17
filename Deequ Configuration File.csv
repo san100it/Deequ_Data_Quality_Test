@@ -1,0 +1,7 @@
+Input Rule Name,input_Coulmn,input_Table_Name,Ref_input_Coulmn,input_Rule ON/OFF
+,select * from DB.TableName,,,
+Data Completeness Check,input_Completness_col,,,KEEP_IT_ON
+Data Duplicate check,input_duplicate_check_col,,,KEEP_IT_ON
+Unknown Value check,Input_unk_check_col,,,KEEP_IT_ON
+Referential Integrity check,,RI_input_Table_Name,RI_input_Table_Col,KEEP_IT_ON
+,,RI_Ref_input_Table_Name,RI_Ref_input_Table_Col,KEEP_IT_ON
