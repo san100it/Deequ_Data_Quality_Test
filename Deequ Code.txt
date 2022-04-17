@@ -1,0 +1,240 @@
+import sys
+from awsglue.transforms import
+from awsglue.utils import getResolved Options
+from pyspark.context import SparkContext from awsglue.context import GlueContext
+from awsglue.job import Job
+import pyspark
+import pydeequ
+from pyspark.sql import Row, SparkSession
+from pydeequ.analyzers import *
+import pandas as pd
+from pydeequ.checks import *
+from pydeequ.veinput_RIfication import *
+from pyspark.sql.functions import desc, row_number, monotonically increasing_id
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+from datetime import datetime
+
+from pyspark.sql.functions import col
+import re
+##@params: [JOB_NAME]
+
+arguments=getResolvedOptions(sys.argy, ['INPUT JOB NAME', 'ConfgurationFile'])
+#Set datetime
+now=datetime.now()
+date_time_stinput_RIng = now.strftime("%Y-%m-%d") 
+current_time_stinput_RIng = now.strftime ("%H-%M-%S")
+sc = SparkContext() 
+glueContext= GlueContext(sc)
+spark=glueContext.spark_session
+spark=SparkSession
+	.builder \
+	.config ("spark.jars.packages", pydeequ.deequ_maven_coord) \
+	.config ("spark.jars.excludes", pydeequ.f2j_maven_coord) \
+	.getorCreate() 
+	
+Config_input_file = arguments['ConfigInputFile']
+
+data=pd.read_csv(Config_input_file)
+
+Input_Query=data.loc[0].at["input_Coulmn"]
+
+check-=Check(spark, CheckLevel.Warning, "Input Data Check")
+#pinput_RInt (Input_Query)
+input_df = spark.aql(Input_Query)
+
+input_df.cache()
+
+#input_RI check
+
+
+input_RI_src_tbl = data.loc [4].at["input_Table_Name"] 
+input_RI_src_tbl_col= data.loc[4].at["Ref_input_Coulmn"]
+input_RI_ref_tbl = data.loc [5].at["input_Table_Name"]
+input_RI_ref_tbl_col = data.loc[5].at["Ref_input_Coulmn"]
+
+var_input_RI_input_check_flag = data.loc[4].at["input_Rule ON/OFF"]
+
+if var input_RI_input_check_flag != "OFF":
+	src_tbl_Input_Query="select from "+input_RI_src_tbl
+	ref_tbl_Input_Query= "select from "+input_RI_ref_tbl
+	input_df_src = spark.sql (arc_tbl_Input_Query)
+	input_df_ref= spark.sql (ref_tbl_Input_Query)
+	input_RI_src_tbl_coll="input_df_src."+input_input_RI_src_tbl_col
+	input_RI_ref_tbl_coll="input_df ref."+input_RI ref tbl col
+
+input_RI_input_df_join = input_df_src.join(input_df_ref, eval(input_input_RI_src_tbl_coll) == eval(input_RI_ref_tbl_col1),"leftouter")
+input_RIinput_checkResult = VerificationSuite(spark) \
+	.onData(input_RI_input_df_join) \
+	.addCheck(
+		check.isComplete(input_RI_ref_tbl_col)
+	.run()
+
+input_RIinput_checkResult_input_df=VerificationSuite.checkResultsAsDataFrame(spark, input_RIinput_checkResult)
+input_RIinput_checkResult_check_success=input_RIinput_checkResult_input_df.filter(F.col("constraint_status").contains("Success"))
+input_RIinput_checkResult_check_NonVal=input_RIinput_checkResult_input_df.filter(input_RIinput_checkResult_input_df.constraint_message=="Value: 0.0 does not meet the constraint requirement!")
+
+def input_RI_input_check_flag1(): 
+	input_resstr = ''
+	if input_RIinput_checkResult_check_success.count()!=0:
+		input_resstr='Full Referential IntegRIty Exists in Data'
+		return input_resstr
+	elif input_RIinput_checkResult_check_NonVal.count()!=0:
+		input_resstr 'No Referential Integinput_RIty Exists'
+		return input_reastr
+	else:
+		input_resstr='Full Referential IntegRIty Does Not Exists in Data!
+		return input_resstr
+
+
+if var_input_RI_input_check_flag != 'OFF':
+	input_RI_existance_val=input_RI_input_check_flag1()
+	input_RIinput_checkResult_input_df2 = spark.createDataFrame([(input_RI_arc_tbl, input_RI_ref_tbl,input_input_RI_src_tbl_col, input_RI_ref_tbl_col, input_RI_existance_val)], ["input_SourceTable", 
+	"input_RefTable", "input_Srcinput_Coulmn", "Refinput_Coulmn", "input_RI check"])
+	input_RIinput_checkResult_input_df2.coalesce(1).write.format("com.databinput_RIcks.spark.cav").option("header","true").mode("append").save("S3_output_path")
+
+
+completness_Input_Query=data.loc[1].at["input_Data_Source"]
+
+input_var_Completeness_tbl=data.loc[0].at["input_Table_Name")
+input_var_Completeness=data.loc[1].at["input_Coulmn"]
+input_var_Completeness_flag=data.loc[1].at["input_Rule ON/OFF"1
+
+
+if input_var_Completeness_flag != 'OFF'
+	input_analysisResult=AnalysisRunner(spark) \
+	.onData(input_df) \ 
+	.addAnalyzer(Size()) \
+	.addAnalyzer(Completeness(input_var_Completeness val)) \
+	.run()
+
+analysisResult_input_df = AnalyzerContext.successMetricsAsDataFrame(spark, input_analysisResult)
+CheckType="NoNullValueExistaCheck"
+
+input_NullCheckvalue_count=completness_input_df.filter(col(input_var_Completeness).isNull()).count()
+
+input_Column_count_val=analysisResult_input_df.select('value').collect()[0][0]
+
+input_Checkvalue_Record_count_msg="Record Count -"+str(round(input_Column_count_val))
+
+input_NullCheckvalue_msg=''
+
+input_Completness_check_val1=''
+
+if input_NullCheckvalue_count!=0:
+	input_Completness_check_val1='Null Values Exists'
+	input_input_NullCheckvalue_msg=str(input_NullCheckvalue_count)+" values are Null"
+else:
+	input_Completness_check_vall="No Null Values Exists"
+
+#a3 path-atr (curr year)+"/"+str (curr month)+"/"+atr (curr date)+"/"+atr (current time)+"/"
+
+#pinput_RInt ("**s3 path ****", a3 path)
+
+if input_var_Completeness_flag != OFF:
+	Completnessinput_checkResult_input_df = spark.createDataFrame([(CheckType, input_input_var_Completeness_tbl, input_var_Completeness, "N/A", "N/A", input_Completness_check_vall, input_Checkvalue_Record_count_msg, input_NullCheckvalue_msg, date_time_input_string, current_time_input_string)], ["CheckType", "input_SourceTable", "input_Srcinput_Coulmn", "input_RefTable","Refinput_Coulmn", "input_checkResult", "input_checkResultMajorl", "input_checkResultMajor2", "input_dqcheckdate", "input_dqchecktime"}) 
+	Completnessinput_checkResult_input_df.coalesce(1).write.format("com.databricks.spark.csv").option ("header", "false").mode("append").partitionBy ("input_dqcheckdate", "input_dqchecktime").save("S3_output_path")
+
+
+input_Duplicate_check_table=data.loc[2].at("input_Table_Name"]
+#Duplicate check
+input_Duplicate_CheckType="Data Duplicate Check"
+Duplicate_check_Input_Query=data.loc[2].at["input_Data_Source"] 
+Duplicate_check_input_df=spark.sql(Duplicate_check_Input_Query)
+
+input_var_Duplicate_check_col= data.loc[2].at("input_Coulmn"] 
+var_Duplicate_input_check_flag=data.loc[2].at["input_Rule ON/OFF"] 
+
+#var Duplicate_check_val=input_check_flag (var_Duplicate check, var_Duplicate_input_check_flag)
+
+if var_Duplicate_input_check_flag != OFF:
+	input_Duplicate_check_funct()
+
+def input_Duplicate_check_funct():
+	Duplicateinput_checkResult=VerificationSuite(Spark) \
+	.onData(input_df) \
+	.addCheck(
+		check.isUnique(input_var_Duplicate_check_col)) \
+	.run()
+
+Duplicateinput_checkResult_input_df = VerificationResult.checkResultsAsDataFrame(spark, Duplicateinput_checkResult)
+Duplicateinput_checkResult_input_df.show())
+DuplicateCheck_input_df_total_count=Duplicate_check_input_df.count()
+
+input_input_Duplicate_check_result_msg=''
+
+input_input_DuplicateCheck_data_count_msg=''
+
+Duplicateinput_checkResult_check_success=Duplicateinput_checkResult_input_df.filter(F.col("constraint_status").contains("Success"))
+
+
+
+if var_Duplicate_input_check_flag != 'OFF¹:
+	if Duplicateinput_checkResult_check_success.count()!=0:
+	input_Duplicate_check_result_msg="Duplicate input Data Found"
+	Duplicateinput_checkResult_msg=Duplicateinput_checkResult_input_df.first()['constraint message']
+	input_DuplicateCheck_fnum=re.findall("\d+\.\d+", Duplicateinput_checkResult mag)
+	input_DuplicateCheck_fnuml=input_DuplicateCheck_fnum[0]
+	input_DuplicateCheck_data_count=DuplicateCheck_input_df_total_count-round(float(input_DuplicateCheck_fnuml)*DuplicateCheck_input_df_total_count)
+	input_DuplicateCheck_data_count_msg="total "+str(input_DuplicateCheck_data_count)+" Records"
+else:
+	input_Duplicate_check_result_msg="No Duplicate Found"
+
+Duplicateinput_checkResult_input_df=spark.createDataFrame([(input_Duplicate_CheckType, input_Duplicate_check_table, input_var_Duplicate_check_col, "N/A", "N/A", input_input_Duplicate_check_result_msg, duplicateCheck_input_df_total_count, input_input_DuplicateCheck_data_count_msg, date_time_stinput_RIng, current_time_stinput_RIng)], ["CheckType", "input_SourceTable", "input_Srcinput_Coulmn", "input_RefTable", "Refinput_Coulmn", "input_checkResult", "input_checkResultMajorl", "input_checkResultMajor2", "input_dqcheckdate", "input_dqchecktime"]) 
+Duplicateinput_checkResult_input_df.coalesce(1).write.format("com.databricks.spark.csv").option("header", "true").mode("append").save ("S3_output_path")
+
+#var
+
+Unk_value_check_Input_Query=data.loc[3].at("Input Data Source"]
+Unk_value_check_input_df=spark.sql(Unk_value_check_Input_Query)
+
+
+input_input_var_Unk_Value_check_table=data.loc[0].at["input_Table_Name"] 
+input_var_Unk_Value_check_col=data.loc[3].at["input_Coulmn"]
+input_var_Unk_Value_check_data=data.loc[3].at["Ref Data")
+
+input_Unk_Data_List=input_var_Unk_Value_check_data.split(",")
+
+
+Unkinput_checkResult_input_df=VerificationSuite(spark) \
+	.onData(Unk_value_check_input_df) \
+	.addCheck(
+		check.isContainedIn(input_var_Unk_Value_check_col, input_Unk_Data_List)) \
+	.run()
+
+Unkinput_checkResult_input_df2 = VeirificationResult.checkResultsAsDataFrame(spark, Unkinput_checkResult_input_df)
+
+#Unkinput_checkResult_input_df.show()
+
+Unkinput_checkResult_input_dfl=Unkinput_checkResult_input_df2.filter(F.col("constraint_message").contains("0.0"))
+
+Unkinput_checkResult_check_success=Unkinput_checkResult_input_df2.filter(F.col("constraint_status").contains ("Success"))
+
+Unkinput_checkResult_check_NonVal=Unkinput_checkResult_input_df2.filter(Unkinput_checkResult_input_df2.constraint message"Value: 0.0 does not meet the constraint requirement!")
+
+def input_unkw_input_check_flag():
+	input_reastr = ''
+if Unkinput_checkResult_check_success.count()!=0:
+	input_resstr='All values Exists' 
+	return input_resstr
+elif Unkinput_checkResult_check_NonVal.count()!=0:
+	input_reastr 'No values Exists!
+	return input_reastr
+else:
+	input_reastr = 'All values Exists'
+	return input_reastr
+
+input_unkw_existance_val=input_unkw_input_check_flag()
+
+Unkinput_checkResult_input_df3 = spark.createDataFrame([(input_input_var_Unk_Value_check_table, input_var_Unk_Value_check_data, input_unkw_existance_val)), ["input_Table", "inputValue", "Unkw Data check"))
+
+
+if var_Unk_Value_input_check_flag != "OFF" :
+	Unkinput_checkResult_input_df3.coalesce(1).write.format("com.databinput_RIcka.spark.csv").option("header", "true").mode("append").save ("S3_output_path")
+
+
+job=Job(glueContext)
+
+Job.init(arguments['INPUT JOB NAME'), arguments)
+
+job.commit()
