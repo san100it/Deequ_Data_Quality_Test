@@ -55,7 +55,7 @@ input_RI_ref_tbl_col = data.loc[5].at["Ref_input_Coulmn"]
 
 var_input_RI_input_check_flag = data.loc[4].at["input_Rule ON/OFF"]
 
-if var input_RI_input_check_flag != "OFF":
+if var input_RI_input_check_flag != "KEEP_IT_OFF":
 	src_tbl_Input_Query="select from "+input_RI_src_tbl
 	ref_tbl_Input_Query= "select from "+input_RI_ref_tbl
 	input_df_src = spark.sql (arc_tbl_Input_Query)
@@ -87,7 +87,7 @@ def input_RI_input_check_flag1():
 		return input_resstr
 
 
-if var_input_RI_input_check_flag != 'OFF':
+if var_input_RI_input_check_flag != 'KEEP_IT_OFF':
 	input_RI_existance_val=input_RI_input_check_flag1()
 	input_RIinput_checkResult_input_df2 = spark.createDataFrame([(input_RI_arc_tbl, input_RI_ref_tbl,input_input_RI_src_tbl_col, input_RI_ref_tbl_col, input_RI_existance_val)], ["input_SourceTable", 
 	"input_RefTable", "input_Srcinput_Coulmn", "Refinput_Coulmn", "input_RI check"])
@@ -101,7 +101,7 @@ input_var_Completeness=data.loc[1].at["input_Coulmn"]
 input_var_Completeness_flag=data.loc[1].at["input_Rule ON/OFF"1
 
 
-if input_var_Completeness_flag != 'OFF'
+if input_var_Completeness_flag != 'KEEP_IT_OFF'
 	input_analysisResult=AnalysisRunner(spark) \
 	.onData(input_df) \ 
 	.addAnalyzer(Size()) \
@@ -131,7 +131,7 @@ else:
 
 #pinput_RInt ("**s3 path ****", a3 path)
 
-if input_var_Completeness_flag != OFF:
+if input_var_Completeness_flag != "KEEP_IT_OFF":
 	Completnessinput_checkResult_input_df = spark.createDataFrame([(CheckType, input_input_var_Completeness_tbl, input_var_Completeness, "N/A", "N/A", input_Completness_check_vall, input_Checkvalue_Record_count_msg, input_NullCheckvalue_msg, date_time_input_string, current_time_input_string)], ["CheckType", "input_SourceTable", "input_Srcinput_Coulmn", "input_RefTable","Refinput_Coulmn", "input_checkResult", "input_checkResultMajorl", "input_checkResultMajor2", "input_dqcheckdate", "input_dqchecktime"}) 
 	Completnessinput_checkResult_input_df.coalesce(1).write.format("com.databricks.spark.csv").option ("header", "false").mode("append").partitionBy ("input_dqcheckdate", "input_dqchecktime").save("S3_output_path")
 
@@ -169,7 +169,7 @@ Duplicateinput_checkResult_check_success=Duplicateinput_checkResult_input_df.fil
 
 
 
-if var_Duplicate_input_check_flag != 'OFF¹:
+if var_Duplicate_input_check_flag != 'KEEP_IT_OFF':
 	if Duplicateinput_checkResult_check_success.count()!=0:
 	input_Duplicate_check_result_msg="Duplicate input Data Found"
 	Duplicateinput_checkResult_msg=Duplicateinput_checkResult_input_df.first()['constraint message']
